@@ -1,8 +1,8 @@
-# 📚 Library Management System (Java OOP)
+# Library Management System (Java OOP)
 
 A console-based library management system built in **Java**, designed to demonstrate clean **Object-Oriented Programming** design: abstraction, inheritance, polymorphism, and encapsulation.
 
-## ✨ Features
+## Features
 - Manage library items of different types: **Books**, **Magazines**, and **E-Books**
 - Manage users: **Students** and **Professors**
 - Borrow and return items with validation (only the borrower can return an item)
@@ -10,7 +10,7 @@ A console-based library management system built in **Java**, designed to demonst
 - Items automatically sorted alphabetically by title
 - Activity log that records every operation in the system
 
-## 🧠 OOP Concepts Applied
+## OOP Concepts Applied
 | Concept | Where |
 |---|---|
 | **Abstraction** | Abstract classes `Item` and `User` with abstract method `calculateLateFee()` |
@@ -24,7 +24,7 @@ A console-based library management system built in **Java**, designed to demonst
 | **Inner Classes** | `Library.Notification` for activity logging |
 | **Object Methods** | Overridden `equals()`, `clone()`, `compareTo()`, `toString()` |
 
-## 🗂️ Class Structure
+## Class Structure
 ```
 Item (abstract)  ── implements Comparable, Cloneable
  ├── Book       ── implements Borrowable   (late fee: 0.5 / day)
@@ -38,7 +38,7 @@ User (abstract)
 Library  ── manages items, users, and logs (inner class: Notification)
 ```
 
-## ▶️ How to Run
+## How to Run
 **Requirements:** Java 8 or later
 
 ```bash
@@ -48,7 +48,7 @@ javac -d out src/project/*.java
 java -cp out project.Main
 ```
 
-## 🖥️ Sample Output
+## Sample Output
 ```
 Book borrowed successfully!
 
@@ -65,6 +65,6 @@ NOTIFICATION: Added item: Tech Monthly
 NOTIFICATION: Added item: Algorithms
 ```
 
-## 👤 Author
+## Author
 **Basil Aljabri** — Computer Science Student, Umm Al-Qura University
 GitHub: [@basilalj3](https://github.com/basilalj3)
