@@ -1,5 +1,10 @@
-package project;
+package project.model;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
+@Entity
+@DiscriminatorValue("EBOOK")
 public class EBook extends Item {
     private String downloadLink;
 
@@ -12,6 +17,10 @@ public class EBook extends Item {
         this.downloadLink = link;
     }
 
+    public String getDownloadLink() {
+        return downloadLink;
+    }
+
     @Override
     public double calculateLateFee(int daysLate) {
         return 0;
@@ -22,4 +31,3 @@ public class EBook extends Item {
         return "EBook: " + super.toString() + " [Download link: " + downloadLink + "]";
     }
 }
-

@@ -1,5 +1,10 @@
-package project;
+package project.model;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
+@Entity
+@DiscriminatorValue("PROFESSOR")
 public class Professor extends User {
     private String faculty;
 
@@ -10,6 +15,10 @@ public class Professor extends User {
     public Professor(String id, String name, String faculty) {
         super(id, name);
         this.faculty = faculty;
+    }
+
+    public String getFaculty() {
+        return faculty;
     }
 
     @Override

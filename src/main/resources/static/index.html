@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نظام المكتبة</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #1f2430; --muted: #6b7280;
+    --border: #e3e5ea; --accent: #2f6fde; --ok: #1f8a4c; --bad: #c2362f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+  header { background: var(--accent); color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 22px; }
+  main { max-width: 1100px; margin: 24px auto; padding: 0 16px; display: grid; gap: 20px; grid-template-columns: 2fr 1fr; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .card h2 { margin: 0 0 14px; font-size: 17px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; }
+  .badge { padding: 2px 8px; border-radius: 99px; font-size: 12px; }
+  .yes { background: #e3f4ea; color: var(--ok); }
+  .no { background: #fbe7e6; color: var(--bad); }
+  .na { background: #eef0f4; color: var(--muted); }
+  button { border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 13px; background: var(--accent); color: #fff; }
+  button.secondary { background: #eef0f4; color: var(--text); }
+  input, select { width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; margin-bottom: 8px; }
+  label { font-size: 13px; color: var(--muted); }
+  #msg { grid-column: 1 / -1; padding: 10px 14px; border-radius: 8px; display: none; }
+  #msg.ok { display: block; background: #e3f4ea; color: var(--ok); }
+  #msg.err { display: block; background: #fbe7e6; color: var(--bad); }
+  ul { padding-inline-start: 18px; margin: 0; font-size: 13px; }
+  .side { display: grid; gap: 20px; align-content: start; }
+  .full { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+<header><h1>📚 نظام إدارة المكتبة</h1></header>
+<main>
+  <div id="msg"></div>
+
+  <section class="card">
+    <h2>العناصر</h2>
+    <label>المستخدم الحالي (للاستعارة والإرجاع)</label>
+    <select id="currentUser"></select>
+    <table>
+      <thead><tr><th>الرقم</th><th>العنوان</th><th>السنة</th><th>النوع</th><th>الحالة</th><th></th></tr></thead>
+      <tbody id="items"></tbody>
+    </table>
+  </section>
+
+  <div class="side">
+    <section class="card">
+      <h2>إضافة عنصر</h2>
+      <form id="itemForm">
+        <select name="type">
+          <option value="BOOK">كتاب</option>
+          <option value="MAGAZINE">مجلة</option>
+          <option value="EBOOK">كتاب إلكتروني</option>
+        </select>
+        <input name="id" placeholder="الرقم مثل B002" required>
+        <input name="title" placeholder="العنوان" required>
+        <input name="year" type="number" placeholder="السنة" required>
+        <input name="downloadLink" placeholder="رابط التحميل (للكتاب الإلكتروني)">
+        <button>إضافة</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>إضافة مستخدم</h2>
+      <form id="userForm">
+        <select name="role">
+          <option value="STUDENT">طالب</option>
+          <option value="PROFESSOR">دكتور</option>
+        </select>
+        <input name="id" placeholder="الرقم مثل S002" required>
+        <input name="name" placeholder="الاسم" required>
+        <input name="departmentOrFaculty" placeholder="القسم / الكلية">
+        <button>إضافة</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>المستخدمون</h2>
+    <table>
+      <thead><tr><th>الرقم</th><th>الاسم</th><th>النوع</th><th>القسم / الكلية</th></tr></thead>
+      <tbody id="users"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>سجل النشاط</h2>
+    <ul id="logs"></ul>
+  </section>
+</main>
+
+<script>
+const TYPES = { BOOK: "كتاب", MAGAZINE: "مجلة", EBOOK: "كتاب إلكتروني" };
+const ROLES = { STUDENT: "طالب", PROFESSOR: "دكتور" };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function show(text, ok) {
+  const m = $("msg");
+  m.textContent = text;
+  m.className = ok ? "ok" : "err";
+}
+
+async function api(path, options = {}) {
+  const res = await fetch("/api" + path, {
+    headers: { "Content-Type": "application/json" }, ...options
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(body?.detail || "حدث خطأ (" + res.status + ")");
+  return body;
+}
+
+async function loadAll() {
+  const [items, users, logs] = await Promise.all([api("/items"), api("/users"), api("/logs")]);
+
+  const selected = $("currentUser").value;
+  $("currentUser").innerHTML = users.map(u =>
+    `<option value="${esc(u.id)}">${esc(u.name)} (${esc(u.id)})</option>`).join("");
+  if (selected) $("currentUser").value = selected;
+
+  $("items").innerHTML = items.map(i => {
+    let status, action = "";
+    if (i.available === undefined) {
+      status = `<span class="badge na">غير قابل للاستعارة</span>`;
+    } else if (i.available) {
+      status = `<span class="badge yes">متاح</span>`;
+      action = `<button onclick="act('${esc(i.id)}','borrow')">استعارة</button>`;
+    } else {
+      status = `<span class="badge no">مُستعار</span>`;
+      action = `<button class="secondary" onclick="act('${esc(i.id)}','return')">إرجاع</button>`;
+    }
+    return `<tr><td>${esc(i.id)}</td><td>${esc(i.title)}</td><td>${i.year}</td>
+            <td>${TYPES[i.type] || i.type}</td><td>${status}</td><td>${action}</td></tr>`;
+  }).join("");
+
+  $("users").innerHTML = users.map(u =>
+    `<tr><td>${esc(u.id)}</td><td>${esc(u.name)}</td><td>${ROLES[u.role] || u.role}</td>
+         <td>${esc(u.department || u.faculty || "")}</td></tr>`).join("");
+
+  // newest first, from the database
+  $("logs").innerHTML = logs.map(l =>
+    `<li>${esc(l.message)} <small style="color:var(--muted)">— ${new Date(l.createdAt).toLocaleString("ar")}</small></li>`).join("");
+}
+
+async function act(itemId, action) {
+  const userId = $("currentUser").value;
+  try {
+    await api(`/items/${encodeURIComponent(itemId)}/${action}?userId=${encodeURIComponent(userId)}`, { method: "POST" });
+    show(action === "borrow" ? "تمت الاستعارة بنجاح" : "تم الإرجاع بنجاح", true);
+  } catch (e) { show(e.message, false); }
+  loadAll();
+}
+
+function formHandler(formId, path, toBody) {
+  $(formId).addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const data = Object.fromEntries(new FormData(ev.target));
+    try {
+      await api(path, { method: "POST", body: JSON.stringify(toBody(data)) });
+      show("تمت الإضافة بنجاح", true);
+      ev.target.reset();
+    } catch (e) { show(e.message, false); }
+    loadAll();
+  });
+}
+
+formHandler("itemForm", "/items", d => ({ ...d, year: Number(d.year) }));
+formHandler("userForm", "/users", d => d);
+
+loadAll().catch(e => show("تعذر الاتصال بالخادم: " + e.message, false));
+</script>
+</body>
+</html>

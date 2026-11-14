@@ -1,5 +1,12 @@
-package project;
+package project.model;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import project.exception.InvalidReturnException;
+import project.exception.ItemNotAvailableException;
+
+@Entity
+@DiscriminatorValue("MAGAZINE")
 public class Magazine extends Item implements Borrowable {
     private String borrowedById; // null = available
 
@@ -25,13 +32,13 @@ public class Magazine extends Item implements Borrowable {
     }
 
     @Override
-    public void returnItem(String userId) throws Exception {
+    public void returnItem(String userId) throws InvalidReturnException {
         if (borrowedById == null) {
-            throw new Exception("Magazine is not borrowed.");
+            throw new InvalidReturnException("Magazine is not borrowed.");
         }
 
         if (!borrowedById.equals(userId)) {
-            throw new Exception("This user did not borrow the magazine.");
+            throw new InvalidReturnException("This user did not borrow the magazine.");
         }
 
         borrowedById = null; // magazine becomes available again
@@ -54,4 +61,3 @@ public class Magazine extends Item implements Borrowable {
         return "Magazine: " + super.toString() + " [" + status + "]";
     }
 }
-
