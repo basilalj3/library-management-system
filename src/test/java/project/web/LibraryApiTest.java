@@ -9,8 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -138,5 +137,27 @@ class LibraryApiTest {
 
         mvc.perform(get("/api/logs"))
                 .andExpect(jsonPath("$[0].message").value("Alice borrowed: Java Programming"));
+    }
+    @Test
+    void deleteItemRemovesIt() throws Exception {
+        mvc.perform(delete("/api/items/M001"))
+                .andExpect(status().isNoContent());
+        mvc.perform(get("/api/items/M001"))
+                .andExpect(status().isNotFound());
+
+
+
+    }
+    @Test
+    void deleteUnknownItemReturns404() throws Exception {
+        mvc.perform(delete("/api/items/NOPE"))
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    void cannotDeleteABorrowedItem() throws Exception {
+        mvc.perform(post("/api/items/B001/borrow").param("userId", "S001"))
+                .andExpect(status().isOk());
+        mvc.perform(delete("/api/items/B001"))
+                .andExpect(status().isConflict());
     }
 }

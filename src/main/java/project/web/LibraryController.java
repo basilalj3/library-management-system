@@ -45,6 +45,11 @@ public class LibraryController {
     public Item addItem(@Valid @RequestBody ItemRequest r) {
         return service.addItem(r.type(), r.id(), r.title(), r.year(), r.downloadLink());
     }
+    @DeleteMapping("/items/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteItem(@PathVariable String id) {
+        service.deleteItem(id);
+    }
 
     @PostMapping("/items/{id}/borrow")
     public Item borrow(@PathVariable String id, @RequestParam String userId) throws ItemNotAvailableException {

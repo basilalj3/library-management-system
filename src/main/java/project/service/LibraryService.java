@@ -58,6 +58,14 @@ public class LibraryService {
         log("Added item: " + title);
         return item;
     }
+    public void deleteItem(String id) {
+        Item item = getItem(id);
+        if (item instanceof Borrowable b && !b.isAvailable()) {
+            throw new ItemInUseException("Cannot delete a borrowed item: " + id);
+        }
+        items.deleteById(id);
+        log("Deleted item: " + item.getTitle());
+    }
 
     public Item borrow(String itemId, String userId) throws ItemNotAvailableException {
         User user = getUser(userId);

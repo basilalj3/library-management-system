@@ -28,7 +28,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    @ExceptionHandler({ItemNotAvailableException.class, DuplicateResourceException.class})
+    @ExceptionHandler({ItemNotAvailableException.class, DuplicateResourceException.class, ItemInUseException.class})
     public ProblemDetail conflict(Exception e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }

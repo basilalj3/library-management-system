@@ -6,6 +6,7 @@ A library management system built with **Java** and **Spring Boot**. It started 
 - Manage library items of different types: **Books**, **Magazines**, and **E-Books**
 - Manage users: **Students** and **Professors**
 - Borrow and return items with validation (only the borrower can return an item)
+- Delete items, with protection against deleting an item that is currently borrowed
 - Item-specific **late-fee calculation** using polymorphism
 - Items sorted alphabetically by title
 - Activity log saved in the database with the time of every operation
@@ -61,7 +62,7 @@ Items and users are each stored in one table using JPA **single-table inheritanc
 | **Polymorphism** | Each item type overrides `calculateLateFee()` and `toString()` |
 | **Interfaces** | `Borrowable`, implemented only by physical items (`Book`, `Magazine`) |
 | **Encapsulation** | Protected and private fields with getter methods |
-| **Custom Exceptions** | `ItemNotAvailableException`, `InvalidReturnException`, `ResourceNotFoundException`, and more |
+| **Custom Exceptions** | `ItemNotAvailableException`, `InvalidReturnException`, `ItemInUseException`, `ResourceNotFoundException`, and more |
 | **Enums** | `ItemType`, `UserRole` |
 | **Object Methods** | Overridden `equals()`, `hashCode()`, `clone()`, `compareTo()`, `toString()` |
 
@@ -90,6 +91,7 @@ Sample users and items are added automatically the first time the app starts.
 | POST | `/api/items` | Add an item |
 | POST | `/api/items/{id}/borrow?userId=S001` | Borrow an item |
 | POST | `/api/items/{id}/return?userId=S001` | Return an item |
+| DELETE | `/api/items/{id}` | Delete an item (204; 409 if it is borrowed) |
 | GET | `/api/items/{id}/late-fee?days=5` | Calculate the late fee |
 | GET | `/api/users` | List all users |
 | GET | `/api/users/{id}` | Get one user |
@@ -114,9 +116,9 @@ POST /api/users
 ```
 
 ## Tests
-The project has **21 automated tests**:
+The project has **24 automated tests**:
 - `ItemTest` (9 tests): late fees, borrowing and returning rules, `equals()`/`hashCode()`, sorting, and cloning
-- `LibraryApiTest` (12 tests): the full API through HTTP, including error cases (404, 409, 400)
+- `LibraryApiTest` (15 tests): the full API through HTTP, including error cases (404, 409, 400)
 
 Tests use a separate in-memory database, so they never change the real data.
 
