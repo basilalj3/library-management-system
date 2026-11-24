@@ -138,6 +138,7 @@ class LibraryApiTest {
         mvc.perform(get("/api/logs"))
                 .andExpect(jsonPath("$[0].message").value("Alice borrowed: Java Programming"));
     }
+
     @Test
     void deleteItemRemovesIt() throws Exception {
         mvc.perform(delete("/api/items/M001"))
@@ -148,16 +149,32 @@ class LibraryApiTest {
 
 
     }
+
     @Test
     void deleteUnknownItemReturns404() throws Exception {
         mvc.perform(delete("/api/items/NOPE"))
                 .andExpect(status().isNotFound());
     }
+
     @Test
     void cannotDeleteABorrowedItem() throws Exception {
         mvc.perform(post("/api/items/B001/borrow").param("userId", "S001"))
                 .andExpect(status().isOk());
         mvc.perform(delete("/api/items/B001"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void filterItemsByYear() throws Exception {
+        mvc.perform(get("/api/items").param("year", "2020"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id", contains("B001")));
+    }
+
+    @Test
+    void filterByYearWithNoMatchesReturnsEmptyList() throws Exception {
+        mvc.perform(get("/api/items").param("year", "1999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 }

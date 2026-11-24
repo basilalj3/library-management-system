@@ -38,6 +38,12 @@ public class LibraryService {
         Collections.sort(all); // uses Item.compareTo (by title)
         return all;
     }
+    @Transactional(readOnly = true)
+    public List<Item> getItemsByYear(int year) {
+        List<Item> result = items.findByYear(year);
+        Collections.sort(result);
+        return result;
+    }
 
     @Transactional(readOnly = true)
     public Item getItem(String id) {

@@ -8,7 +8,7 @@ A library management system built with **Java** and **Spring Boot**. It started 
 - Borrow and return items with validation (only the borrower can return an item)
 - Delete items, with protection against deleting an item that is currently borrowed
 - Item-specific **late-fee calculation** using polymorphism
-- Items sorted alphabetically by title
+- Items sorted alphabetically by title, with an optional filter by publication year
 - Activity log saved in the database with the time of every operation
 - Clear error responses (404, 409, 400) with a message explaining the problem
 - A web page to use the system from the browser
@@ -87,6 +87,7 @@ Sample users and items are added automatically the first time the app starts.
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/items` | List all items, sorted by title |
+| GET | `/api/items?year=2020` | List only the items published in that year |
 | GET | `/api/items/{id}` | Get one item |
 | POST | `/api/items` | Add an item |
 | POST | `/api/items/{id}/borrow?userId=S001` | Borrow an item |
@@ -116,9 +117,9 @@ POST /api/users
 ```
 
 ## Tests
-The project has **24 automated tests**:
+The project has **26 automated tests**:
 - `ItemTest` (9 tests): late fees, borrowing and returning rules, `equals()`/`hashCode()`, sorting, and cloning
-- `LibraryApiTest` (15 tests): the full API through HTTP, including error cases (404, 409, 400)
+- `LibraryApiTest` (17 tests): the full API through HTTP, including error cases (404, 409, 400)
 
 Tests use a separate in-memory database, so they never change the real data.
 

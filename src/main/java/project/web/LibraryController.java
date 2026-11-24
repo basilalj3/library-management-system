@@ -31,8 +31,12 @@ public class LibraryController {
     // ---- Items ----
 
     @GetMapping("/items")
-    public List<Item> items() {
-        return service.getSortedItems();
+    public List<Item> items(@RequestParam(required = false) Integer year) {
+        if (year == null) {
+            return service.getSortedItems();
+
+        }
+        return service.getItemsByYear(year);
     }
 
     @GetMapping("/items/{id}")
@@ -45,6 +49,7 @@ public class LibraryController {
     public Item addItem(@Valid @RequestBody ItemRequest r) {
         return service.addItem(r.type(), r.id(), r.title(), r.year(), r.downloadLink());
     }
+
     @DeleteMapping("/items/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteItem(@PathVariable String id) {
