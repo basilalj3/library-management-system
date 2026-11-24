@@ -18,7 +18,7 @@ A library management system built with **Java** and **Spring Boot**. It started 
 |---|---|
 | Language | Java 25 |
 | Framework | Spring Boot 4 (Spring Web MVC, Validation) |
-| Database | Spring Data JPA (Hibernate) with an H2 database saved to a file |
+| Database | MySQL with Spring Data JPA (Hibernate); H2 in-memory database for tests |
 | Testing | JUnit 5, MockMvc |
 | Build | Maven |
 
@@ -67,8 +67,27 @@ Items and users are each stored in one table using JPA **single-table inheritanc
 | **Object Methods** | Overridden `equals()`, `hashCode()`, `clone()`, `compareTo()`, `toString()` |
 
 ## How to Run
-**Requirements:** Java 25 (Maven is included through the Maven Wrapper)
+**Requirements:** Java 25 and a local MySQL server, for example from WAMP or XAMPP (Maven is included through the Maven Wrapper)
 
+**1. Create the database and a dedicated user** (in phpMyAdmin or the MySQL console):
+```sql
+CREATE DATABASE library_db;
+CREATE USER 'library_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON library_db.* TO 'library_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+The tables are created automatically by Hibernate from the `@Entity` classes.
+
+**2. Set the password as an environment variable** (it is never stored in the code):
+```bash
+# Linux / macOS
+export DB_PASSWORD=your_password
+# Windows PowerShell
+$env:DB_PASSWORD="your_password"
+```
+In IntelliJ, add `DB_PASSWORD=your_password` under Run Configuration, Environment variables. To use a different user, also set `DB_USERNAME`.
+
+**3. Run the app:**
 ```bash
 git clone https://github.com/basilalj3/library-management-system.git
 cd library-management-system
@@ -79,7 +98,6 @@ On Windows, use `mvnw.cmd spring-boot:run`.
 Then open:
 - **Web page:** http://localhost:8080
 - **API:** http://localhost:8080/api/items
-- **Database console:** http://localhost:8080/h2-console (JDBC URL: `jdbc:h2:file:./data/library`, user: `sa`, no password)
 
 Sample users and items are added automatically the first time the app starts.
 
@@ -121,7 +139,7 @@ The project has **26 automated tests**:
 - `ItemTest` (9 tests): late fees, borrowing and returning rules, `equals()`/`hashCode()`, sorting, and cloning
 - `LibraryApiTest` (17 tests): the full API through HTTP, including error cases (404, 409, 400)
 
-Tests use a separate in-memory database, so they never change the real data.
+Tests use a separate in-memory H2 database, so they run without MySQL and never change the real data.
 
 ```bash
 ./mvnw test
